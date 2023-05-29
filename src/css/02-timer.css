@@ -1,0 +1,32 @@
+#datetime-picker {
+  width: 200px;
+  padding: 5px;
+  border: 1px solid #ccc;
+}
+
+button[data-start] {
+  cursor: pointer;
+}
+
+.timer {
+  display: flex;
+  justify-content: start;
+  margin-top: 20px;
+}
+
+.timer .field {
+  margin: 0 10px;
+  text-align: center;
+}
+
+.timer .value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.timer .label {
+  font-size: 12px;
+  color: #212121;
+  text-transform: uppercase;
+  display: block;
+}
