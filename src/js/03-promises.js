@@ -44,6 +44,9 @@ function handleSubmit(event) {
 
     currentDelay += step;
   }
+  delayInput.value = '';
+  stepInput.value = '';
+  amountInput.value = '';
 }
 
 const form = document.querySelector('.form');

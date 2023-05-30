@@ -2,78 +2,8 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import Notiflix from 'notiflix';
 
-let countdownIntervalId;
-
-const datetimePicker = document.getElementById('datetime-picker');
-const startButton = document.querySelector('[data-start]');
-const daysElement = document.querySelector('[data-days]');
-const hoursElement = document.querySelector('[data-hours]');
-const minutesElement = document.querySelector('[data-minutes]');
-const secondsElement = document.querySelector('[data-seconds]');
-
 function addLeadingZero(value) {
   return value.toString().padStart(2, '0');
-}
-
-function updateTimerDisplay(time) {
-  daysElement.textContent = addLeadingZero(time.days);
-  hoursElement.textContent = addLeadingZero(time.hours);
-  minutesElement.textContent = addLeadingZero(time.minutes);
-  secondsElement.textContent = addLeadingZero(time.seconds);
-}
-
-function startCountdown() {
-  const selectedDate = flatpickr.parseDate(datetimePicker.value);
-  const currentDate = new Date();
-
-  if (selectedDate <= currentDate) {
-    Notiflix.Notify.warning('Please choose a date in the future');
-    return;
-  }
-
-  startButton.disabled = true;
-
-  // Встановлення години на початок дня (0 годин) для обраних дат
-  selectedDate.setHours(0, 0, 0, 0);
-  currentDate.setHours(0, 0, 0, 0);
-
-  const selectedUtcDate = Date.UTC(
-    selectedDate.getFullYear(),
-    selectedDate.getMonth(),
-    selectedDate.getDate(),
-    selectedDate.getHours(),
-    selectedDate.getMinutes(),
-    selectedDate.getSeconds()
-  );
-
-  const currentUtcDate = Date.UTC(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate(),
-    currentDate.getHours(),
-    currentDate.getMinutes(),
-    currentDate.getSeconds()
-  );
-
-  let timeDifference = selectedUtcDate - currentUtcDate;
-
-  function updateCountdown() {
-    timeDifference -= 1000;
-
-    if (timeDifference <= 0) {
-      clearInterval(countdownIntervalId);
-      startButton.disabled = false;
-      updateTimerDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-      return;
-    }
-
-    const time = convertMs(timeDifference);
-    updateTimerDisplay(time);
-  }
-
-  updateCountdown();
-  countdownIntervalId = setInterval(updateCountdown, 1000);
 }
 
 function convertMs(ms) {
@@ -90,23 +20,55 @@ function convertMs(ms) {
   return { days, hours, minutes, seconds };
 }
 
-flatpickr('#datetime-picker', {
+const startButton = document.querySelector('button[data-start]');
+const daysElement = document.querySelector('[data-days]');
+const hoursElement = document.querySelector('[data-hours]');
+const minutesElement = document.querySelector('[data-minutes]');
+const secondsElement = document.querySelector('[data-seconds]');
+startButton.disabled = true;
+
+const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose(selectedDates, dateStr, instance) {
+  onClose(selectedDates) {
     const selectedDate = selectedDates[0];
-    const currentDate = new Date();
 
-    if (selectedDate <= currentDate) {
-      instance.setDate(currentDate, false);
-      Notiflix.Notify.warning('Please choose a date in the future');
+    if (selectedDate.getTime() <= Date.now()) {
+      Notiflix.Notify.warning('Please choose a future date and time');
       startButton.disabled = true;
     } else {
       startButton.disabled = false;
     }
   },
-});
+};
 
-startButton.addEventListener('click', startCountdown);
+const datePicker = flatpickr('#datetime-picker', options);
+
+startButton.addEventListener('click', () => {
+  const selectedDate = datePicker.selectedDates[0];
+  const targetDate = selectedDate.getTime();
+
+  const intervalId = setInterval(() => {
+    const currentDate = Date.now();
+    const difference = targetDate - currentDate;
+
+    if (difference <= 0) {
+      clearInterval(intervalId);
+      daysElement.textContent = '00';
+      hoursElement.textContent = '00';
+      minutesElement.textContent = '00';
+      secondsElement.textContent = '00';
+      startButton.disabled = true;
+    } else {
+      const { days, hours, minutes, seconds } = convertMs(difference);
+      daysElement.textContent = addLeadingZero(days);
+      hoursElement.textContent = addLeadingZero(hours);
+      minutesElement.textContent = addLeadingZero(minutes);
+      secondsElement.textContent = addLeadingZero(seconds);
+      startButton.disabled = true;
+      datePicker._input.disabled = true;
+    }
+  }, 1000);
+});

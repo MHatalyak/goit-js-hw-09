@@ -13,19 +13,28 @@ function changeBackgroundColor() {
 
 function startChanging() {
   var start = document.querySelector('[data-start]');
+  var stop = document.querySelector('[data-stop]');
+
   start.disabled = true;
+  stop.disabled = false;
+
   intervalId = setInterval(changeBackgroundColor, 1000);
 }
 
 function stopChanging() {
   clearInterval(intervalId);
   var start = document.querySelector('[data-start]');
+  var stop = document.querySelector('[data-stop]');
+
   start.disabled = false;
+  stop.disabled = true;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
   var start = document.querySelector('[data-start]');
   var stop = document.querySelector('[data-stop]');
+
+  stop.disabled = true;
 
   start.addEventListener('click', startChanging);
   stop.addEventListener('click', stopChanging);
